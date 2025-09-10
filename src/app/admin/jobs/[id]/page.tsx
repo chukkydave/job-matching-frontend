@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import toast, { Toaster } from 'react-hot-toast';
 import { Job, Matching } from '@/lib/types';
 
 export default function AdminJobDetailPage() {
@@ -74,10 +75,41 @@ export default function AdminJobDetailPage() {
     };
 
     const handleDeleteJob = async () => {
-        if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
-            return;
-        }
+        if (!job) return;
 
+        toast((t) => (
+            <div className="flex flex-col space-y-3">
+                <div className="font-medium text-gray-900">
+                    Delete Job Confirmation
+                </div>
+                <div className="text-sm text-gray-600">
+                    Are you sure you want to delete "{job.title}"? This action cannot be undone and will also remove all associated matches.
+                </div>
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => {
+                            toast.dismiss(t.id);
+                            performDelete();
+                        }}
+                        className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                        Delete
+                    </button>
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: 10000,
+            position: 'top-center',
+        });
+    };
+
+    const performDelete = async () => {
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(`http://localhost:3001/api/jobs/${jobId}`, {
@@ -88,13 +120,16 @@ export default function AdminJobDetailPage() {
             });
 
             if (response.ok) {
-                router.push('/admin/jobs');
+                toast.success('Job deleted successfully!');
+                setTimeout(() => {
+                    router.push('/admin/jobs');
+                }, 1000);
             } else {
-                alert('Failed to delete job');
+                toast.error('Failed to delete job');
             }
         } catch (err) {
             console.error('Error deleting job:', err);
-            alert('Network error. Please try again.');
+            toast.error('Network error. Please try again.');
         }
     };
 
@@ -127,7 +162,9 @@ export default function AdminJobDetailPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <>
+            <Toaster />
+            <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-8">
                 <div className="flex justify-between items-center">
@@ -324,5 +361,6 @@ export default function AdminJobDetailPage() {
                 </div>
             </div>
         </div>
+        </>
     );
 }
