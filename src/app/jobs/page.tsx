@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useApi } from '@/hooks/useApi';
-import { api } from '@/utils/api';
 import { PageLayout, LoadingState, EmptyState } from '@/components/shared/layout/PageLayout';
 import { ResponsiveGrid } from '@/components/shared/layout/ResponsiveGrid';
 import { Card } from '@/components/shared/cards/Card';
@@ -29,23 +27,30 @@ export default function PublicJobsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [skillFilter, setSkillFilter] = useState('');
-
-    const { execute: fetchJobs, isLoading: jobsLoading, error } = useApi<Job[]>({
-        showErrorToast: false,
-        showSuccessToast: false,
-    });
-
-    const loadJobs = useCallback(() => {
-        fetchJobs(
-            () => api.get('/jobs'),
-            (data) => setJobs(data),
-            () => setJobs([])
-        );
-    }, [fetchJobs]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        loadJobs();
-    }, [loadJobs]);
+        fetchJobs();
+    }, []);
+
+    const fetchJobs = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch('http://localhost:3001/api/jobs');
+            const data = await response.json();
+
+            if (response.ok) {
+                setJobs(data);
+            } else {
+                setError('Failed to load jobs');
+            }
+        } catch (err) {
+            setError('Network error. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         filterJobs();
@@ -84,7 +89,7 @@ export default function PublicJobsPage() {
         setSkillFilter('');
     };
 
-    if (jobsLoading) {
+    if (isLoading) {
         return <LoadingState message="Loading jobs..." />;
     }
 
