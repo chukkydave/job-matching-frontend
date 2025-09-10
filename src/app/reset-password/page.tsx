@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthLayout from '@/components/AuthLayout';
 import { API_BASE_URL } from '@/config/api';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
     const [formData, setFormData] = useState({
         password: '',
         confirmPassword: ''
@@ -275,5 +275,19 @@ export default function ResetPasswordPage() {
                 </div>
             </form>
         </AuthLayout>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={
+            <AuthLayout title="Loading..." subtitle="Please wait while we load the reset form">
+                <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-instollar-dark"></div>
+                </div>
+            </AuthLayout>
+        }>
+            <ResetPasswordForm />
+        </Suspense>
     );
 }
