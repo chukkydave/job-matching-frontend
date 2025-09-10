@@ -31,6 +31,7 @@ export default function DashboardPage() {
         unverifiedUsers: 0,
     });
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingStats, setIsLoadingStats] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -58,6 +59,7 @@ export default function DashboardPage() {
     }, [router]);
 
     const fetchAdminStats = async () => {
+        setIsLoadingStats(true);
         try {
             const token = localStorage.getItem('token');
             const response = await fetch('http://localhost:3001/api/admin/stats', {
@@ -72,6 +74,8 @@ export default function DashboardPage() {
             }
         } catch (error) {
             console.error('Error fetching admin stats:', error);
+        } finally {
+            setIsLoadingStats(false);
         }
     };
 
@@ -110,7 +114,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-instollar-dark">{stats.totalJobs}</p>
+                                <p className="text-2xl font-bold text-instollar-dark">
+                                    {isLoadingStats ? '...' : stats.totalJobs}
+                                </p>
                                 <p className="text-gray-600">Total Jobs</p>
                             </div>
                         </div>
@@ -125,7 +131,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-instollar-dark">{stats.totalUsers}</p>
+                                <p className="text-2xl font-bold text-instollar-dark">
+                                    {isLoadingStats ? '...' : stats.totalUsers}
+                                </p>
                                 <p className="text-gray-600">Total Users</p>
                             </div>
                         </div>
@@ -140,7 +148,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-instollar-dark">{stats.totalTalents}</p>
+                                <p className="text-2xl font-bold text-instollar-dark">
+                                    {isLoadingStats ? '...' : stats.totalTalents}
+                                </p>
                                 <p className="text-gray-600">Talents</p>
                             </div>
                         </div>
@@ -155,7 +165,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-instollar-dark">{stats.totalAdmins}</p>
+                                <p className="text-2xl font-bold text-instollar-dark">
+                                    {isLoadingStats ? '...' : stats.totalAdmins}
+                                </p>
                                 <p className="text-gray-600">Admins</p>
                             </div>
                         </div>
@@ -170,7 +182,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-instollar-dark">{stats.totalMatches}</p>
+                                <p className="text-2xl font-bold text-instollar-dark">
+                                    {isLoadingStats ? '...' : stats.totalMatches}
+                                </p>
                                 <p className="text-gray-600">Total Matches</p>
                             </div>
                         </div>
@@ -185,7 +199,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-green-600">{stats.activeMatches}</p>
+                                <p className="text-2xl font-bold text-green-600">
+                                    {isLoadingStats ? '...' : stats.activeMatches}
+                                </p>
                                 <p className="text-gray-600">Active Matches</p>
                             </div>
                         </div>
@@ -200,7 +216,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-blue-600">{stats.completedMatches}</p>
+                                <p className="text-2xl font-bold text-blue-600">
+                                    {isLoadingStats ? '...' : stats.completedMatches}
+                                </p>
                                 <p className="text-gray-600">Completed Matches</p>
                             </div>
                         </div>
@@ -215,7 +233,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-green-600">{stats.verifiedUsers}</p>
+                                <p className="text-2xl font-bold text-green-600">
+                                    {isLoadingStats ? '...' : stats.verifiedUsers}
+                                </p>
                                 <p className="text-gray-600">Verified Users</p>
                             </div>
                         </div>
@@ -230,7 +250,9 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-red-600">{stats.unverifiedUsers}</p>
+                                <p className="text-2xl font-bold text-red-600">
+                                    {isLoadingStats ? '...' : stats.unverifiedUsers}
+                                </p>
                                 <p className="text-gray-600">Unverified Users</p>
                             </div>
                         </div>
