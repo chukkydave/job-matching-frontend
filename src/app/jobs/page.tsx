@@ -6,6 +6,7 @@ import { PageLayout, LoadingState, EmptyState } from '@/components/shared/layout
 import { ResponsiveGrid } from '@/components/shared/layout/ResponsiveGrid';
 import { Card } from '@/components/shared/cards/Card';
 import { Button } from '@/components/shared/buttons/Button';
+import { getApiUrl } from '@/config/api';
 
 interface Job {
     _id: string;
@@ -37,7 +38,7 @@ export default function PublicJobsPage() {
     const fetchJobs = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('http://localhost:3001/api/jobs');
+            const response = await fetch(getApiUrl('/jobs'));
             const data = await response.json();
 
             if (response.ok) {
