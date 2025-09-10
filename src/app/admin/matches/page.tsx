@@ -46,7 +46,7 @@ export default function AdminMatchesPage() {
     const fetchData = async () => {
         try {
             const token = localStorage.getItem('token');
-            
+
             // Fetch all data in parallel
             const [matchingsRes, talentsRes, jobsRes] = await Promise.all([
                 fetch('http://localhost:3001/api/matching', {
@@ -238,7 +238,7 @@ export default function AdminMatchesPage() {
                                     >
                                         <option value="">Choose a talent...</option>
                                         {talents.map((talent) => (
-                                            <option key={talent.id} value={talent.id}>
+                                            <option key={talent._id} value={talent._id}>
                                                 {talent.name} - {talent.location}
                                             </option>
                                         ))}
@@ -299,11 +299,10 @@ export default function AdminMatchesPage() {
                                         <div className="flex justify-between items-start">
                                             <div className="flex-1">
                                                 <div className="flex items-center mb-2">
-                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                        match.status === 'Active' 
-                                                            ? 'bg-green-100 text-green-800' 
-                                                            : 'bg-gray-100 text-gray-800'
-                                                    }`}>
+                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${match.status === 'Active'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                        }`}>
                                                         {match.status}
                                                     </span>
                                                 </div>

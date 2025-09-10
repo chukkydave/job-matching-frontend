@@ -90,7 +90,7 @@ export default function DashboardPage() {
                             <div>
                                 <span className="text-sm text-gray-500">Skills:</span>
                                 <div className="flex flex-wrap gap-2 mt-1">
-                                    {user.skills.map((skill, index) => (
+                                    {user.skills && user.skills.map((skill, index) => (
                                         <span
                                             key={index}
                                             className="bg-instollar-yellow text-instollar-dark px-2 py-1 rounded text-sm"
