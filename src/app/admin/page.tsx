@@ -3,31 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Job } from '@/lib/types';
 
-interface Job {
-    _id: string;
-    title: string;
-    description: string;
-    requiredSkills: string[];
-    location: string;
-    createdBy: {
-        _id: string;
-        name: string;
-        email: string;
-    };
-    createdAt: string;
-}
+
 
 export default function AdminPage() {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    const [user, setUser] = useState<any>(null);
     const router = useRouter();
-
-    useEffect(() => {
-        checkAuth();
-    }, []);
 
     const checkAuth = () => {
         const token = localStorage.getItem('token');
@@ -44,24 +28,31 @@ export default function AdminPage() {
                 router.push('/dashboard');
                 return;
             }
-            setUser(parsedUser);
             fetchJobs();
         } catch (error) {
+            console.error('Error parsing user data:', error);
             router.push('/login');
         }
     };
+
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+
 
     const fetchJobs = async () => {
         try {
             const response = await fetch('http://localhost:3001/api/jobs');
             const data = await response.json();
-            
+
             if (response.ok) {
                 setJobs(data);
             } else {
                 setError('Failed to load jobs');
             }
         } catch (err) {
+            console.error('Error fetching jobs:', err);
             setError('Network error. Please try again.');
         } finally {
             setIsLoading(false);
@@ -88,6 +79,7 @@ export default function AdminPage() {
                 alert('Failed to delete job');
             }
         } catch (err) {
+            console.error('Error deleting job:', err);
             alert('Network error. Please try again.');
         }
     };
