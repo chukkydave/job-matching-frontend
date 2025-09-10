@@ -85,13 +85,13 @@ export default function TalentPage() {
                     </div>
                     <div className="flex space-x-4">
                         <Link
-                            href="/jobs"
+                            href="/talent/jobs"
                             className="bg-instollar-dark text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
                         >
                             Browse All Jobs
                         </Link>
                         <Link
-                            href="/dashboard"
+                            href="/talent/dashboard"
                             className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
                         >
                             Back to Dashboard
@@ -157,7 +157,7 @@ export default function TalentPage() {
                                 Keep your profile updated and check back later for new opportunities
                             </p>
                             <Link
-                                href="/jobs"
+                                href="/talent/jobs"
                                 className="bg-instollar-dark text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
                             >
                                 Browse Available Jobs

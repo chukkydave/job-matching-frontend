@@ -126,13 +126,13 @@ export default function TalentDashboardPage() {
                     </h2>
                     <div className="space-y-3">
                         <Link
-                            href="/jobs"
+                            href="/talent/jobs"
                             className="block w-full bg-instollar-dark text-white text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
                         >
                             Browse Jobs
                         </Link>
                         <Link
-                            href="/talent"
+                            href="/talent/matches"
                             className="block w-full bg-instollar-yellow text-instollar-dark text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
                         >
                             My Matches
@@ -182,7 +182,7 @@ export default function TalentDashboardPage() {
                                 No matches yet
                             </div>
                             <Link
-                                href="/jobs"
+                                href="/talent/jobs"
                                 className="bg-instollar-dark text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
                             >
                                 Browse Available Jobs
@@ -225,7 +225,7 @@ export default function TalentDashboardPage() {
                             {matches.length > 3 && (
                                 <div className="text-center pt-4">
                                     <Link
-                                        href="/talent"
+                                        href="/talent/matches"
                                         className="text-instollar-dark hover:underline"
                                     >
                                         View All Matches ({matches.length})
