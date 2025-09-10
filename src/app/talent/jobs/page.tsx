@@ -96,88 +96,78 @@ export default function TalentJobsPage() {
         <PageLayout
             title="Find Your Next Opportunity"
             subtitle="Discover jobs that match your skills and location"
-            actions={
-                <div className="flex gap-3">
-                    <Link href="/talent/matches">
-                        <Button variant="secondary">My Matches</Button>
-                    </Link>
-                    <Link href="/talent/dashboard">
-                        <Button variant="secondary">Dashboard</Button>
-                    </Link>
-                </div>
-            }
         >
 
             {/* Search and Filters */}
             <Card className="mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-                                Search Jobs
-                            </label>
-                            <input
-                                type="text"
-                                id="search"
-                                placeholder="Job title or description..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-instollar-dark focus:border-instollar-dark"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                                Location
-                            </label>
-                            <input
-                                type="text"
-                                id="location"
-                                placeholder="City, Country..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-instollar-dark focus:border-instollar-dark"
-                                value={locationFilter}
-                                onChange={(e) => setLocationFilter(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="skill" className="block text-sm font-medium text-gray-700 mb-1">
-                                Skill
-                            </label>
-                            <input
-                                type="text"
-                                id="skill"
-                                placeholder="JavaScript, React..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-instollar-dark focus:border-instollar-dark"
-                                value={skillFilter}
-                                onChange={(e) => setSkillFilter(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="flex items-end">
-                            <Button
-                                variant="secondary"
-                                fullWidth
-                                onClick={clearFilters}
-                            >
-                                Clear Filters
-                            </Button>
-                        </div>
+                    <div>
+                        <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                            Search Jobs
+                        </label>
+                        <input
+                            type="text"
+                            id="search"
+                            placeholder="Job title or description..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-instollar-dark focus:border-instollar-dark"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
-                </Card>
 
-                {/* Results Count */}
-                <div className="mb-6">
-                    <p className="text-gray-600">
-                        Showing {filteredJobs.length} of {jobs.length} jobs
-                    </p>
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                            Location
+                        </label>
+                        <input
+                            type="text"
+                            id="location"
+                            placeholder="City, Country..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-instollar-dark focus:border-instollar-dark"
+                            value={locationFilter}
+                            onChange={(e) => setLocationFilter(e.target.value)}
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="skill" className="block text-sm font-medium text-gray-700 mb-1">
+                            Skill
+                        </label>
+                        <input
+                            type="text"
+                            id="skill"
+                            placeholder="JavaScript, React..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-instollar-dark focus:border-instollar-dark"
+                            value={skillFilter}
+                            onChange={(e) => setSkillFilter(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex items-end">
+                        <Button
+                            variant="secondary"
+                            fullWidth
+                            onClick={clearFilters}
+                        >
+                            Clear Filters
+                        </Button>
+                    </div>
                 </div>
+            </Card>
 
-                {/* Error Message */}
-                {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-                        <div className="text-red-700">{error}</div>
-                    </div>
-                )}
+            {/* Results Count */}
+            <div className="mb-6">
+                <p className="text-gray-600">
+                    Showing {filteredJobs.length} of {jobs.length} jobs
+                </p>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+                    <div className="text-red-700">{error}</div>
+                </div>
+            )}
 
             {/* Jobs Grid */}
             {filteredJobs.length === 0 ? (
