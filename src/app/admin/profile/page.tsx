@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { User } from '@/lib/types';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useApi } from '@/hooks/useApi';
+import { api, getAuthToken } from '@/utils/api';
+import { PageLayout, LoadingState } from '@/components/shared/layout/PageLayout';
+import { Card } from '@/components/shared/cards/Card';
+import { Button } from '@/components/shared/buttons/Button';
+import { Modal } from '@/components/shared/modals/Modal';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function AdminProfilePage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const { user, isLoading: authLoading } = useAuth('Admin');
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -21,42 +25,26 @@ export default function AdminProfilePage() {
         newPassword: '',
         confirmPassword: ''
     });
-    const [isRequestingOTP, setIsRequestingOTP] = useState(false);
-    const [isChangingPassword, setIsChangingPassword] = useState(false);
-    const router = useRouter();
 
-    const checkAuth = useCallback(() => {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
-
-        if (!token || !userData) {
-            router.push('/login');
-            return;
-        }
-
-        try {
-            const parsedUser = JSON.parse(userData);
-            if (parsedUser.role !== 'Admin') {
-                router.push('/dashboard');
-                return;
-            }
-            setUser(parsedUser);
-            setFormData({
-                name: parsedUser.name,
-                location: parsedUser.location,
-                skills: parsedUser.skills || [],
-            });
-        } catch (error) {
-            console.error('Error parsing user data:', error);
-            router.push('/login');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [router]);
+    const { execute: updateProfile, isLoading: isUpdating } = useApi({
+        successMessage: 'Profile updated successfully!',
+    });
+    const { execute: requestOTP, isLoading: isRequestingOTP } = useApi({
+        successMessage: 'OTP sent to your email!',
+    });
+    const { execute: changePassword, isLoading: isChangingPassword } = useApi({
+        successMessage: 'Password changed successfully!',
+    });
 
     useEffect(() => {
-        checkAuth();
-    }, [checkAuth]);
+        if (user) {
+            setFormData({
+                name: user.name,
+                location: user.location,
+                skills: user.skills || [],
+            });
+        }
+    }, [user]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -83,32 +71,18 @@ export default function AdminProfilePage() {
         }));
     };
 
-    const handleSave = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3001/api/auth/me', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            });
+    const handleSave = () => {
+        const token = getAuthToken();
+        if (!token) return;
 
-            if (response.ok) {
-                const updatedUser = await response.json();
-                setUser(updatedUser.user);
-                localStorage.setItem('user', JSON.stringify(updatedUser.user));
+        updateProfile(
+            () => api.put('/auth/me', formData, token),
+            (data: unknown) => {
+                const response = data as { user: Record<string, unknown> };
+                localStorage.setItem('user', JSON.stringify(response.user));
                 setIsEditing(false);
-                toast.success('Profile updated successfully!');
-            } else {
-                const errorData = await response.json();
-                toast.error(errorData.message || 'Failed to update profile');
             }
-        } catch (err) {
-            console.error('Error updating profile:', err);
-            toast.error('Network error. Please try again.');
-        }
+        );
     };
 
     const handleCancel = () => {
@@ -122,32 +96,16 @@ export default function AdminProfilePage() {
         setIsEditing(false);
     };
 
-    const handleRequestOTP = async () => {
-        try {
-            setIsRequestingOTP(true);
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3001/api/auth/change-password-otp', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+    const handleRequestOTP = () => {
+        const token = getAuthToken();
+        if (!token) return;
 
-            if (response.ok) {
-                toast.success('OTP sent to your email');
-            } else {
-                const errorData = await response.json();
-                toast.error(errorData.message || 'Failed to send OTP');
-            }
-        } catch (err) {
-            console.error('Error requesting OTP:', err);
-            toast.error('Network error. Please try again.');
-        } finally {
-            setIsRequestingOTP(false);
-        }
+        requestOTP(
+            () => api.post('/auth/change-password-otp', {}, token)
+        );
     };
 
-    const handleChangePassword = async () => {
+    const handleChangePassword = () => {
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             toast.error('Passwords do not match');
             return;
@@ -158,85 +116,48 @@ export default function AdminProfilePage() {
             return;
         }
 
-        try {
-            setIsChangingPassword(true);
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3001/api/auth/verify-otp-change-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    otp: passwordData.otp,
-                    newPassword: passwordData.newPassword
-                })
-            });
+        const token = getAuthToken();
+        if (!token) return;
 
-            if (response.ok) {
-                toast.success('Password changed successfully');
+        changePassword(
+            () => api.post('/auth/verify-otp-change-password', {
+                otp: passwordData.otp,
+                newPassword: passwordData.newPassword
+            }, token),
+            () => {
                 setShowChangePasswordModal(false);
                 setPasswordData({ otp: '', newPassword: '', confirmPassword: '' });
-            } else {
-                const errorData = await response.json();
-                toast.error(errorData.message || 'Failed to change password');
             }
-        } catch (err) {
-            console.error('Error changing password:', err);
-            toast.error('Network error. Please try again.');
-        } finally {
-            setIsChangingPassword(false);
-        }
+        );
     };
 
-    if (isLoading) {
-        return (
-            <div className="max-w-7xl mx-auto">
-                <div className="flex items-center justify-center h-64">
-                    <div className="text-lg text-gray-600">Loading profile...</div>
-                </div>
-            </div>
-        );
+    if (authLoading) {
+        return <LoadingState message="Loading profile..." />;
     }
 
     if (!user) {
-        return (
-            <div className="max-w-7xl mx-auto">
-                <div className="text-center py-8">
-                    <div className="text-red-600 text-lg">User not found</div>
-                </div>
-            </div>
-        );
+        return null;
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-instollar-dark mb-2">
-                    Profile Settings
-                </h1>
-                <p className="text-gray-600">
-                    Manage your account information and preferences
-                </p>
-            </div>
+        <PageLayout
+            title="Profile Settings"
+            subtitle="Manage your account information and preferences"
+        >
 
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Profile Info */}
                 <div className="lg:col-span-2">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div className="flex justify-between items-center mb-6">
+                    <Card>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
                             <h2 className="text-xl font-semibold text-instollar-dark">
                                 Personal Information
                             </h2>
                             {!isEditing && (
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="bg-instollar-dark text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
-                                >
+                                <Button onClick={() => setIsEditing(true)}>
                                     Edit Profile
-                                </button>
+                                </Button>
                             )}
                         </div>
 
@@ -341,29 +262,32 @@ export default function AdminProfilePage() {
                             </div>
 
                             {isEditing && (
-                                <div className="flex space-x-3 pt-4">
-                                    <button
+                                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                                    <Button
                                         onClick={handleSave}
-                                        className="bg-instollar-dark text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
+                                        disabled={isUpdating}
+                                        loading={isUpdating}
+                                        fullWidth
                                     >
                                         Save Changes
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
                                         onClick={handleCancel}
-                                        className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                                        fullWidth
                                     >
                                         Cancel
-                                    </button>
+                                    </Button>
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </Card>
                 </div>
 
                 {/* Account Info Sidebar */}
                 <div className="space-y-6">
                     {/* Account Status */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <Card>
                         <h3 className="text-lg font-semibold text-instollar-dark mb-4">
                             Account Status
                         </h3>
@@ -384,122 +308,111 @@ export default function AdminProfilePage() {
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </Card>
 
                     {/* Quick Actions */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <Card>
                         <h3 className="text-lg font-semibold text-instollar-dark mb-4">
                             Quick Actions
                         </h3>
                         <div className="space-y-3">
-                            <button
+                            <Button
                                 onClick={() => setShowChangePasswordModal(true)}
-                                className="block w-full bg-instollar-dark text-white text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
+                                fullWidth
                             >
                                 Change Password
-                            </button>
+                            </Button>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
 
             {/* Change Password Modal */}
-            {showChangePasswordModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-                        {/* Modal Header */}
-                        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h3 className="text-xl font-semibold text-instollar-dark">
-                                Change Password
-                            </h3>
-                            <button
-                                onClick={() => {
-                                    setShowChangePasswordModal(false);
-                                    setPasswordData({ otp: '', newPassword: '', confirmPassword: '' });
-                                }}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+            <Modal
+                isOpen={showChangePasswordModal}
+                onClose={() => {
+                    setShowChangePasswordModal(false);
+                    setPasswordData({ otp: '', newPassword: '', confirmPassword: '' });
+                }}
+                title="Change Password"
+                size="md"
+                footer={
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                            onClick={handleChangePassword}
+                            disabled={isChangingPassword || !passwordData.otp || !passwordData.newPassword || !passwordData.confirmPassword}
+                            loading={isChangingPassword}
+                            fullWidth
+                        >
+                            Change Password
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={() => {
+                                setShowChangePasswordModal(false);
+                                setPasswordData({ otp: '', newPassword: '', confirmPassword: '' });
+                            }}
+                            fullWidth
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            OTP Code
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                                type="text"
+                                value={passwordData.otp}
+                                onChange={(e) => setPasswordData(prev => ({ ...prev, otp: e.target.value }))}
+                                placeholder="Enter OTP from email"
+                                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-instollar-dark"
+                            />
+                            <Button
+                                variant="secondary"
+                                onClick={handleRequestOTP}
+                                disabled={isRequestingOTP}
+                                loading={isRequestingOTP}
+                                className="whitespace-nowrap"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {/* Modal Content */}
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    OTP Code
-                                </label>
-                                <div className="flex space-x-2">
-                                    <input
-                                        type="text"
-                                        value={passwordData.otp}
-                                        onChange={(e) => setPasswordData(prev => ({ ...prev, otp: e.target.value }))}
-                                        placeholder="Enter OTP from email"
-                                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-instollar-dark"
-                                    />
-                                    <button
-                                        onClick={handleRequestOTP}
-                                        disabled={isRequestingOTP}
-                                        className="bg-instollar-yellow text-instollar-dark px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50"
-                                    >
-                                        {isRequestingOTP ? 'Sending...' : 'Get OTP'}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    New Password
-                                </label>
-                                <input
-                                    type="password"
-                                    value={passwordData.newPassword}
-                                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                                    placeholder="Enter new password"
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-instollar-dark"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Confirm Password
-                                </label>
-                                <input
-                                    type="password"
-                                    value={passwordData.confirmPassword}
-                                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                                    placeholder="Confirm new password"
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-instollar-dark"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="p-6 border-t border-gray-200 flex space-x-3">
-                            <button
-                                onClick={handleChangePassword}
-                                disabled={isChangingPassword || !passwordData.otp || !passwordData.newPassword || !passwordData.confirmPassword}
-                                className="flex-1 bg-instollar-dark text-white py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50"
-                            >
-                                {isChangingPassword ? 'Changing...' : 'Change Password'}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowChangePasswordModal(false);
-                                    setPasswordData({ otp: '', newPassword: '', confirmPassword: '' });
-                                }}
-                                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-                            >
-                                Cancel
-                            </button>
+                                Get OTP
+                            </Button>
                         </div>
                     </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            New Password
+                        </label>
+                        <input
+                            type="password"
+                            value={passwordData.newPassword}
+                            onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                            placeholder="Enter new password"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-instollar-dark"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Confirm Password
+                        </label>
+                        <input
+                            type="password"
+                            value={passwordData.confirmPassword}
+                            onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                            placeholder="Confirm new password"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-instollar-dark"
+                        />
+                    </div>
                 </div>
-            )}
+            </Modal>
 
             <Toaster />
-        </div>
+        </PageLayout>
     );
 }
