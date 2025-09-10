@@ -76,7 +76,7 @@ export default function AdminJobsPage() {
     const performDelete = async (jobId: string) => {
         const token = getAuthToken();
         if (!token) return;
-        
+
         deleteJob(
             () => api.delete(`/jobs/${jobId}`, token),
             () => setJobs(jobs.filter(job => job._id !== jobId))

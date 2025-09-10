@@ -1,67 +1,67 @@
 const API_BASE_URL = 'http://localhost:3001/api';
 
 export const api = {
-  get: async (endpoint: string, token?: string) => {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    get: async (endpoint: string, token?: string) => {
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
 
-    return fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'GET',
-      headers,
-    });
-  },
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
 
-  post: async (endpoint: string, data?: any, token?: string) => {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+        return fetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'GET',
+            headers,
+        });
+    },
 
-    return fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers,
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  },
+    post: async (endpoint: string, data?: any, token?: string) => {
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
 
-  put: async (endpoint: string, data?: any, token?: string) => {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
 
-    return fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'PUT',
-      headers,
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  },
+        return fetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'POST',
+            headers,
+            body: data ? JSON.stringify(data) : undefined,
+        });
+    },
 
-  delete: async (endpoint: string, token?: string) => {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    put: async (endpoint: string, data?: any, token?: string) => {
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
 
-    return fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'DELETE',
-      headers,
-    });
-  },
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        return fetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'PUT',
+            headers,
+            body: data ? JSON.stringify(data) : undefined,
+        });
+    },
+
+    delete: async (endpoint: string, token?: string) => {
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        return fetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'DELETE',
+            headers,
+        });
+    },
 };
 
 export const getAuthToken = () => localStorage.getItem('token');
