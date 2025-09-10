@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { User } from '@/lib/types';
 
 interface SidebarProps {
-    user: User;
+    user: User | null;
 }
 
 export default function Sidebar({ user }: SidebarProps) {
@@ -36,7 +36,28 @@ export default function Sidebar({ user }: SidebarProps) {
         { name: 'Profile', href: '/talent/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
     ];
 
-    const navItems = user.role === 'Admin' ? adminNavItems : talentNavItems;
+    const navItems = user?.role === 'Admin' ? adminNavItems : talentNavItems;
+
+    // Don't render navigation if user is not loaded yet
+    if (!user) {
+        return (
+            <div className="bg-instollar-dark text-white w-64 min-h-screen flex flex-col">
+                <div className="p-4 border-b border-gray-700">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <div className="w-8 h-8 bg-instollar-yellow rounded-lg flex items-center justify-center mr-3">
+                                <span className="text-instollar-dark font-bold text-lg">I</span>
+                            </div>
+                            <h1 className="text-xl font-bold">Instollar Jobs</h1>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-instollar-yellow"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`bg-instollar-dark text-white transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} min-h-screen flex flex-col`}>
@@ -63,7 +84,7 @@ export default function Sidebar({ user }: SidebarProps) {
             </div>
 
             {/* User Info */}
-            {!isCollapsed && (
+            {!isCollapsed && user && (
                 <div className="p-4 border-b border-gray-700">
                     <div className="flex items-center">
                         <div className="w-10 h-10 bg-instollar-yellow rounded-full flex items-center justify-center mr-3">
