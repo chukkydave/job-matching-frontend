@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import toast, { Toaster } from 'react-hot-toast';
@@ -20,11 +20,7 @@ export default function AdminJobDetailPage() {
     const params = useParams();
     const jobId = params.id as string;
 
-    useEffect(() => {
-        checkAuth();
-    }, [jobId]);
-
-    const checkAuth = () => {
+    const checkAuth = useCallback(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
 
@@ -44,7 +40,11 @@ export default function AdminJobDetailPage() {
             console.error('Error parsing user data:', error);
             router.push('/login');
         }
-    };
+    }, [router, jobId]);
+
+    useEffect(() => {
+        checkAuth();
+    }, [checkAuth]);
 
     const fetchJobDetails = async () => {
         try {
@@ -88,7 +88,7 @@ export default function AdminJobDetailPage() {
                     Delete Job Confirmation
                 </div>
                 <div className="text-sm text-gray-600">
-                    Are you sure you want to delete "{job.title}"? This action cannot be undone and will also remove all associated matches.
+                    Are you sure you want to delete &ldquo;{job.title}&rdquo;? This action cannot be undone and will also remove all associated matches.
                 </div>
                 <div className="flex space-x-2">
                     <button

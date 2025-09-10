@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Job } from '@/lib/types';
@@ -12,7 +12,8 @@ export default function AdminPage() {
     const [error, setError] = useState('');
     const router = useRouter();
 
-    const checkAuth = () => {
+
+    const checkAuth = useCallback(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
 
@@ -32,11 +33,11 @@ export default function AdminPage() {
             console.error('Error parsing user data:', error);
             router.push('/login');
         }
-    };
+    }, [router]);
 
     useEffect(() => {
         checkAuth();
-    }, []);
+    }, [checkAuth]);
 
 
 

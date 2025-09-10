@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useApi } from '@/hooks/useApi';
@@ -28,26 +28,25 @@ export default function JobDetailPage() {
     const { user } = useAuth();
     const [job, setJob] = useState<Job | null>(null);
     const params = useParams();
-    const router = useRouter();
 
     const { execute: fetchJob, isLoading, error } = useApi<Job>({
         showErrorToast: false,
         showSuccessToast: false,
     });
 
-    useEffect(() => {
-        if (params.id) {
-            loadJob(params.id as string);
-        }
-    }, [params.id]);
-
-    const loadJob = (jobId: string) => {
+    const loadJob = useCallback((jobId: string) => {
         fetchJob(
             () => api.get(`/jobs/${jobId}`),
             (data) => setJob(data),
             () => setJob(null)
         );
-    };
+    }, [fetchJob]);
+
+    useEffect(() => {
+        if (params.id) {
+            loadJob(params.id as string);
+        }
+    }, [params.id, loadJob]);
 
     const getBackUrl = () => {
         // If user is a talent, go back to their matches page

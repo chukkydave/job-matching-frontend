@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User } from '@/lib/types';
 import { API_BASE_URL } from '@/config/api';
 
 export default function CreateJobPage() {
@@ -15,14 +14,9 @@ export default function CreateJobPage() {
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
-    useEffect(() => {
-        checkAuth();
-    }, []);
-
-    const checkAuth = () => {
+    const checkAuth = useCallback(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
 
@@ -37,11 +31,16 @@ export default function CreateJobPage() {
                 router.push('/dashboard');
                 return;
             }
-            setUser(parsedUser);
         } catch (error) {
+            console.error('Error parsing user data:', error);
             router.push('/login');
         }
-    };
+    }, [router]);
+
+    useEffect(() => {
+        checkAuth();
+    }, [checkAuth]);
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({
@@ -86,7 +85,7 @@ export default function CreateJobPage() {
             } else {
                 setError(data.message || 'Failed to create job');
             }
-        } catch (err) {
+        } catch {
             setError('Network error. Please try again.');
         } finally {
             setIsLoading(false);

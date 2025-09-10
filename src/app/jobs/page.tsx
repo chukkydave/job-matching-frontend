@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { PageLayout, LoadingState, EmptyState } from '@/components/shared/layout/PageLayout';
 import { ResponsiveGrid } from '@/components/shared/layout/ResponsiveGrid';
@@ -46,18 +46,14 @@ export default function PublicJobsPage() {
             } else {
                 setError('Failed to load jobs');
             }
-        } catch (err) {
+        } catch {
             setError('Network error. Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    useEffect(() => {
-        filterJobs();
-    }, [jobs, searchTerm, locationFilter, skillFilter]);
-
-    const filterJobs = () => {
+    const filterJobs = useCallback(() => {
         let filtered = jobs;
 
         if (searchTerm) {
@@ -82,7 +78,11 @@ export default function PublicJobsPage() {
         }
 
         setFilteredJobs(filtered);
-    };
+    }, [jobs, searchTerm, locationFilter, skillFilter]);
+
+    useEffect(() => {
+        filterJobs();
+    }, [filterJobs]);
 
     const clearFilters = () => {
         setSearchTerm('');

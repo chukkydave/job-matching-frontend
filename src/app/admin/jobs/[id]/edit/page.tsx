@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import toast, { Toaster } from 'react-hot-toast';
@@ -22,11 +22,7 @@ export default function EditJobPage() {
     const params = useParams();
     const jobId = params.id as string;
 
-    useEffect(() => {
-        checkAuth();
-    }, [jobId]);
-
-    const checkAuth = () => {
+    const checkAuth = useCallback(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
 
@@ -46,7 +42,11 @@ export default function EditJobPage() {
             console.error('Error parsing user data:', error);
             router.push('/login');
         }
-    };
+    }, [router, jobId]);
+
+    useEffect(() => {
+        checkAuth();
+    }, [checkAuth]);
 
     const fetchJobDetails = async () => {
         try {
