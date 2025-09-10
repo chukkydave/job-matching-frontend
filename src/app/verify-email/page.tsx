@@ -71,26 +71,38 @@ export default function VerifyEmailPage() {
         setError('');
 
         try {
-            // For now, we'll simulate email verification
-            // In a real app, you'd send this to your backend
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Move temp data to permanent storage
-            const tempUser = localStorage.getItem('tempUser');
             const tempToken = localStorage.getItem('tempToken');
+            if (!tempToken) {
+                router.push('/login');
+                return;
+            }
 
-            if (tempUser && tempToken) {
-                localStorage.setItem('user', tempUser);
-                localStorage.setItem('token', tempToken);
-                localStorage.removeItem('tempUser');
-                localStorage.removeItem('tempToken');
+            const response = await fetch('http://localhost:3001/api/auth/verify-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${tempToken}`
+                },
+                body: JSON.stringify({ code })
+            });
 
+            const data = await response.json();
+
+            if (response.ok) {
+                // Move temp data to permanent storage
+                const tempUser = localStorage.getItem('tempUser');
+                if (tempUser) {
+                    localStorage.setItem('user', tempUser);
+                    localStorage.setItem('token', tempToken);
+                    localStorage.removeItem('tempUser');
+                    localStorage.removeItem('tempToken');
+                }
                 router.push('/dashboard');
             } else {
-                router.push('/login');
+                setError(data.message || 'Verification failed. Please try again.');
             }
         } catch (err) {
-            setError('Verification failed. Please try again.');
+            setError('Network error. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -101,6 +113,30 @@ export default function VerifyEmailPage() {
 
         setResendTimer(60);
         setError('');
+
+        try {
+            const tempToken = localStorage.getItem('tempToken');
+            if (!tempToken) {
+                router.push('/login');
+                return;
+            }
+
+            const response = await fetch('http://localhost:3001/api/auth/resend-verification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${tempToken}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.message || 'Failed to resend verification email');
+            }
+        } catch (err) {
+            setError('Network error. Please try again.');
+        }
 
         // Start timer again
         const timer = setInterval(() => {
