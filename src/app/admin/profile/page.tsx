@@ -11,7 +11,6 @@ export default function AdminProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
-        email: '',
         location: '',
         skills: [] as string[],
     });
@@ -44,7 +43,6 @@ export default function AdminProfilePage() {
             setUser(parsedUser);
             setFormData({
                 name: parsedUser.name,
-                email: parsedUser.email,
                 location: parsedUser.location,
                 skills: parsedUser.skills || [],
             });
@@ -117,7 +115,6 @@ export default function AdminProfilePage() {
         if (user) {
             setFormData({
                 name: user.name,
-                email: user.email,
                 location: user.location,
                 skills: user.skills || [],
             });
@@ -265,17 +262,8 @@ export default function AdminProfilePage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Email Address
                                 </label>
-                                {isEditing ? (
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-instollar-dark"
-                                    />
-                                ) : (
-                                    <p className="text-gray-900">{user.email}</p>
-                                )}
+                                <p className="text-gray-900">{user.email}</p>
+                                <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
                             </div>
 
                             <div>
@@ -389,8 +377,8 @@ export default function AdminProfilePage() {
                             <div className="flex justify-between items-center">
                                 <span className="text-gray-600">Email Status</span>
                                 <span className={`px-2 py-1 rounded text-sm font-medium ${user.isEmailVerified
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
                                     }`}>
                                     {user.isEmailVerified ? 'Verified' : 'Not Verified'}
                                 </span>
@@ -404,7 +392,7 @@ export default function AdminProfilePage() {
                             Quick Actions
                         </h3>
                         <div className="space-y-3">
-                            <button 
+                            <button
                                 onClick={() => setShowChangePasswordModal(true)}
                                 className="block w-full bg-instollar-dark text-white text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
                             >
