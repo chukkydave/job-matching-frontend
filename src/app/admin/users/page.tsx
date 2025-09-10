@@ -9,6 +9,8 @@ export default function AdminUsersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [filter, setFilter] = useState<'all' | 'talent' | 'admin'>('all');
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [showProfileModal, setShowProfileModal] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -65,6 +67,11 @@ export default function AdminUsersPage() {
 
     const talentCount = users.filter(user => user.role === 'Talent').length;
     const adminCount = users.filter(user => user.role === 'Admin').length;
+
+    const handleViewProfile = (user: User) => {
+        setSelectedUser(user);
+        setShowProfileModal(true);
+    };
 
     if (isLoading) {
         return (
@@ -142,8 +149,8 @@ export default function AdminUsersPage() {
                         <button
                             onClick={() => setFilter('all')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm ${filter === 'all'
-                                    ? 'border-instollar-dark text-instollar-dark'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'border-instollar-dark text-instollar-dark'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             All Users ({users.length})
@@ -151,8 +158,8 @@ export default function AdminUsersPage() {
                         <button
                             onClick={() => setFilter('talent')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm ${filter === 'talent'
-                                    ? 'border-instollar-dark text-instollar-dark'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'border-instollar-dark text-instollar-dark'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             Talents ({talentCount})
@@ -160,8 +167,8 @@ export default function AdminUsersPage() {
                         <button
                             onClick={() => setFilter('admin')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm ${filter === 'admin'
-                                    ? 'border-instollar-dark text-instollar-dark'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'border-instollar-dark text-instollar-dark'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             Admins ({adminCount})
@@ -208,8 +215,8 @@ export default function AdminUsersPage() {
                                                         {user.name}
                                                     </h3>
                                                     <span className={`px-2 py-1 rounded text-xs font-medium ${user.role === 'Admin'
-                                                            ? 'bg-purple-100 text-purple-800'
-                                                            : 'bg-blue-100 text-blue-800'
+                                                        ? 'bg-purple-100 text-purple-800'
+                                                        : 'bg-blue-100 text-blue-800'
                                                         }`}>
                                                         {user.role}
                                                     </span>
@@ -247,14 +254,12 @@ export default function AdminUsersPage() {
                                             </div>
                                         </div>
                                         <div className="flex space-x-2">
-                                            <button className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300 transition-colors">
+                                            <button
+                                                onClick={() => handleViewProfile(user)}
+                                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300 transition-colors"
+                                            >
                                                 View Profile
                                             </button>
-                                            {user.role === 'Talent' && (
-                                                <button className="bg-instollar-dark text-white px-3 py-1 rounded text-sm hover:bg-opacity-90 transition-colors">
-                                                    Create Match
-                                                </button>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -263,6 +268,118 @@ export default function AdminUsersPage() {
                     )}
                 </div>
             </div>
+
+            {/* User Profile Modal */}
+            {showProfileModal && selectedUser && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+                        {/* Modal Header */}
+                        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                            <h3 className="text-xl font-semibold text-instollar-dark">
+                                User Profile
+                            </h3>
+                            <button
+                                onClick={() => setShowProfileModal(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                            <div className="space-y-6">
+                                {/* User Avatar and Basic Info */}
+                                <div className="flex items-start space-x-4">
+                                    <div className="w-20 h-20 bg-instollar-yellow rounded-full flex items-center justify-center">
+                                        <span className="text-instollar-dark font-bold text-2xl">
+                                            {selectedUser.name.charAt(0).toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center mb-2">
+                                            <h4 className="text-2xl font-bold text-instollar-dark mr-3">
+                                                {selectedUser.name}
+                                            </h4>
+                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedUser.role === 'Admin'
+                                                ? 'bg-purple-100 text-purple-800'
+                                                : 'bg-blue-100 text-blue-800'
+                                                }`}>
+                                                {selectedUser.role}
+                                            </span>
+                                        </div>
+                                        <p className="text-gray-600 text-lg mb-2">{selectedUser.email}</p>
+                                        <div className="flex items-center text-gray-500 mb-2">
+                                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            {selectedUser.location}
+                                        </div>
+                                        <div className="flex items-center">
+                                            <span className={`w-3 h-3 rounded-full mr-2 ${selectedUser.isEmailVerified ? 'bg-green-500' : 'bg-red-500'
+                                                }`}></span>
+                                            <span className="text-sm text-gray-600">
+                                                {selectedUser.isEmailVerified ? 'Email Verified' : 'Email Not Verified'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Skills Section */}
+                                {selectedUser.skills && selectedUser.skills.length > 0 && (
+                                    <div>
+                                        <h5 className="text-lg font-semibold text-instollar-dark mb-3">Skills</h5>
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedUser.skills.map((skill, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="bg-instollar-yellow text-instollar-dark px-3 py-1 rounded-full text-sm font-medium"
+                                                >
+                                                    {skill}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Account Information */}
+                                <div>
+                                    <h5 className="text-lg font-semibold text-instollar-dark mb-3">Account Information</h5>
+                                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">User ID:</span>
+                                            <span className="font-mono text-sm text-gray-800">{selectedUser._id}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Role:</span>
+                                            <span className="font-medium">{selectedUser.role}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Email Status:</span>
+                                            <span className={`font-medium ${selectedUser.isEmailVerified ? 'text-green-600' : 'text-red-600'}`}>
+                                                {selectedUser.isEmailVerified ? 'Verified' : 'Not Verified'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 border-t border-gray-200">
+                            <button
+                                onClick={() => setShowProfileModal(false)}
+                                className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
