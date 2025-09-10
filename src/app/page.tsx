@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100">
@@ -13,18 +15,18 @@ export default function Home() {
             Our intelligent matching system helps talents and companies find each other.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
+            <Link
               href="/jobs"
               className="bg-instollar-dark text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
             >
               Browse Jobs
-            </a>
-            <a
+            </Link>
+            <Link
               href="/register"
               className="bg-instollar-yellow text-instollar-dark px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
             >
               Get Started
-            </a>
+            </Link>
           </div>
         </div>
       </section>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User } from '@/lib/types';
+import { API_BASE_URL } from '@/config/api';
 
 export default function CreateJobPage() {
     const [formData, setFormData] = useState({
@@ -64,7 +65,7 @@ export default function CreateJobPage() {
             const token = localStorage.getItem('token');
             const skillsArray = formData.requiredSkills.split(',').map(skill => skill.trim()).filter(skill => skill);
 
-            const response = await fetch('http://localhost:3001/api/jobs', {
+            const response = await fetch(`${API_BASE_URL}/jobs`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

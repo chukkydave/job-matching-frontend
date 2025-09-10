@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthLayout from '@/components/AuthLayout';
+import { API_BASE_URL } from '@/config/api';
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -58,7 +59,7 @@ export default function RegisterPage() {
         try {
             const skillsArray = formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill);
 
-            const response = await fetch('http://localhost:3001/api/auth/register', {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

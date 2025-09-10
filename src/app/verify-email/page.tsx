@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthLayout from '@/components/AuthLayout';
+import { API_BASE_URL } from '@/config/api';
 
 export default function VerifyEmailPage() {
     const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
@@ -77,7 +78,7 @@ export default function VerifyEmailPage() {
                 return;
             }
 
-            const response = await fetch('http://localhost:3001/api/auth/verify-email', {
+            const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -121,7 +122,7 @@ export default function VerifyEmailPage() {
                 return;
             }
 
-            const response = await fetch('http://localhost:3001/api/auth/resend-verification', {
+            const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import toast, { Toaster } from 'react-hot-toast';
 import { Job } from '../../../../../lib/types';
+import { API_BASE_URL } from '../../../../../config/api';
 
 export default function EditJobPage() {
     const [job, setJob] = useState<Job | null>(null);
@@ -49,7 +50,7 @@ export default function EditJobPage() {
 
     const fetchJobDetails = async () => {
         try {
-            const response = await fetch(`http://localhost:3001/api/jobs/${jobId}`);
+            const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
             if (response.ok) {
                 const jobData = await response.json();
                 setJob(jobData);
@@ -115,7 +116,7 @@ export default function EditJobPage() {
         setIsSaving(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3001/api/jobs/${jobId}`, {
+            const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

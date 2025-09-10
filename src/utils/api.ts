@@ -16,7 +16,7 @@ export const api = {
         });
     },
 
-    post: async (endpoint: string, data?: any, token?: string) => {
+    post: async (endpoint: string, data?: unknown, token?: string) => {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
         };
@@ -32,7 +32,7 @@ export const api = {
         });
     },
 
-    put: async (endpoint: string, data?: any, token?: string) => {
+    put: async (endpoint: string, data?: unknown, token?: string) => {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
         };

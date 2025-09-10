@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import toast, { Toaster } from 'react-hot-toast';
 import { Job, Matching, User } from '@/lib/types';
+import { API_BASE_URL } from '@/config/api';
 
 export default function AdminJobDetailPage() {
     const [job, setJob] = useState<Job | null>(null);
@@ -51,8 +52,8 @@ export default function AdminJobDetailPage() {
 
             // Fetch job details and matchings in parallel
             const [jobRes, matchingsRes] = await Promise.all([
-                fetch(`http://localhost:3001/api/jobs/${jobId}`),
-                fetch('http://localhost:3001/api/matching', {
+                fetch(`${API_BASE_URL}/jobs/${jobId}`),
+                fetch(`${API_BASE_URL}/matching`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
             ]);
@@ -116,7 +117,7 @@ export default function AdminJobDetailPage() {
     const performDelete = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3001/api/jobs/${jobId}`, {
+            const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -146,7 +147,7 @@ export default function AdminJobDetailPage() {
         setIsLoadingUsers(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3001/api/users', {
+            const response = await fetch(`${API_BASE_URL}/users`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -173,7 +174,7 @@ export default function AdminJobDetailPage() {
         setIsCreatingMatch(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3001/api/matching', {
+            const response = await fetch(`${API_BASE_URL}/matching`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
