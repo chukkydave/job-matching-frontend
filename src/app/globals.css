@@ -3,11 +3,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --instollar-dark: #002620;
+  --instollar-yellow: #EFFE3D;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-instollar-dark: var(--instollar-dark);
+  --color-instollar-yellow: var(--instollar-yellow);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
