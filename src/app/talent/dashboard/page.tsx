@@ -1,241 +1,149 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { User, Matching } from '../../../lib/types';
+import { useAuth } from '@/hooks/useAuth';
+import { useApi } from '@/hooks/useApi';
+import { api, getAuthToken } from '@/utils/api';
+import { PageLayout, LoadingState } from '@/components/shared/layout/PageLayout';
+import { ResponsiveGrid } from '@/components/shared/layout/ResponsiveGrid';
+import { Card, StatCard } from '@/components/shared/cards/Card';
+import { Button } from '@/components/shared/buttons/Button';
+
+interface TalentStats {
+    totalMatches: number;
+    activeMatches: number;
+    completedMatches: number;
+    recentMatches: number;
+    totalJobs: number;
+    matchingJobs: number;
+    jobsInLocation: number;
+    matchSuccessRate: number;
+    profileCompleteness: number;
+}
+
+interface Match {
+    _id: string;
+    status: string;
+    createdAt: string;
+    jobId: {
+        title: string;
+        description: string;
+        location: string;
+    };
+}
 
 export default function TalentDashboardPage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [matches, setMatches] = useState<Matching[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isLoadingMatches, setIsLoadingMatches] = useState(false);
-    const router = useRouter();
+    const { user, isLoading: authLoading } = useAuth('Talent');
+    const [stats, setStats] = useState<TalentStats | null>(null);
+    const [recentMatches, setRecentMatches] = useState<Match[]>([]);
+
+    const { execute: fetchStats, isLoading: statsLoading } = useApi<TalentStats>({
+        showErrorToast: false,
+        showSuccessToast: false,
+    });
+
+    const { execute: fetchMatches, isLoading: matchesLoading } = useApi<Match[]>({
+        showErrorToast: false,
+        showSuccessToast: false,
+    });
+
+    const loadDashboardData = useCallback(() => {
+        const token = getAuthToken();
+        if (!token) return;
+
+        // Fetch talent statistics
+        fetchStats(
+            () => api.get('/talent/stats', token),
+            (data) => setStats(data)
+        );
+
+        // Fetch recent matches
+        fetchMatches(
+            () => api.get('/talent/matches', token),
+            (data) => setRecentMatches(data.slice(0, 3)) // Get only first 3 for dashboard
+        );
+    }, [fetchStats, fetchMatches]);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
-
-        if (!token || !userData) {
-            router.push('/login');
-            return;
+        if (!authLoading && user) {
+            loadDashboardData();
         }
+    }, [authLoading, user, loadDashboardData]);
 
-        try {
-            const parsedUser = JSON.parse(userData);
-            if (parsedUser.role !== 'Talent') {
-                router.push('/admin/dashboard');
-                return;
-            }
-            setUser(parsedUser);
-            fetchUserMatches();
-        } catch (error) {
-            console.error('Error parsing user data:', error);
-            router.push('/login');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [router]);
-
-    const fetchUserMatches = async () => {
-        setIsLoadingMatches(true);
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3001/api/matching/user', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (response.ok) {
-                const matchesData = await response.json();
-                setMatches(matchesData);
-            } else {
-                console.error('Failed to fetch user matches');
-            }
-        } catch (error) {
-            console.error('Error fetching user matches:', error);
-        } finally {
-            setIsLoadingMatches(false);
-        }
-    };
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-lg">Loading...</div>
-            </div>
-        );
+    if (authLoading || statsLoading) {
+        return <LoadingState message="Loading dashboard..." />;
     }
 
-    if (!user) {
+    if (!user || !stats) {
         return null;
     }
 
-    const activeMatches = matches.filter(match => match.status === 'Active');
-    const completedMatches = matches.filter(match => match.status === 'Inactive');
-
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-instollar-dark">
-                    Talent Dashboard
-                </h1>
-                <p className="text-gray-600 mt-2">
-                    Welcome back, {user.name} • {user.location}
-                </p>
-            </div>
+        <PageLayout
+            title="Talent Dashboard"
+            subtitle={`Welcome back, ${user.name} • ${user.location}`}
+        >
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Profile Information */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h2 className="text-xl font-semibold text-instollar-dark mb-4">
-                        Profile Information
-                    </h2>
-                    <div className="space-y-3">
-                        <div>
-                            <span className="text-sm text-gray-500">Email:</span>
-                            <p className="font-medium">{user.email}</p>
-                        </div>
-                        <div>
-                            <span className="text-sm text-gray-500">Role:</span>
-                            <p className="font-medium">{user.role}</p>
-                        </div>
-                        <div>
-                            <span className="text-sm text-gray-500">Location:</span>
-                            <p className="font-medium">{user.location}</p>
-                        </div>
-                        <div>
-                            <span className="text-sm text-gray-500">Skills:</span>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                                {user.skills && user.skills.map((skill, index) => (
-                                    <span
-                                        key={index}
-                                        className="bg-instollar-yellow text-instollar-dark px-2 py-1 rounded text-sm"
-                                    >
-                                        {skill}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {/* Stats Grid */}
+            <ResponsiveGrid cols={{ default: 1, sm: 2, lg: 3 }} className="mb-6 sm:mb-8">
+                <StatCard
+                    title="Total Matches"
+                    value={stats.totalMatches}
+                    icon={
+                        <svg className="w-6 h-6 text-instollar-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    }
+                />
+                <StatCard
+                    title="Active Matches"
+                    value={stats.activeMatches}
+                    icon={
+                        <svg className="w-6 h-6 text-instollar-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    }
+                />
+                <StatCard
+                    title="Success Rate"
+                    value={`${stats.matchSuccessRate}%`}
+                    icon={
+                        <svg className="w-6 h-6 text-instollar-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    }
+                />
+                <StatCard
+                    title="Jobs Matching Skills"
+                    value={stats.matchingJobs}
+                    icon={
+                        <svg className="w-6 h-6 text-instollar-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                        </svg>
+                    }
+                />
+                <StatCard
+                    title="Jobs in Location"
+                    value={stats.jobsInLocation}
+                    icon={
+                        <svg className="w-6 h-6 text-instollar-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    }
+                />
+                <StatCard
+                    title="Profile Complete"
+                    value={`${stats.profileCompleteness}%`}
+                    icon={
+                        <svg className="w-6 h-6 text-instollar-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    }
+                />
+            </ResponsiveGrid>
 
-                {/* Quick Actions */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h2 className="text-xl font-semibold text-instollar-dark mb-4">
-                        Quick Actions
-                    </h2>
-                    <div className="space-y-3">
-                        <Link
-                            href="/talent/jobs"
-                            className="block w-full bg-instollar-dark text-white text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
-                        >
-                            Browse Jobs
-                        </Link>
-                        <Link
-                            href="/talent/matches"
-                            className="block w-full bg-instollar-yellow text-instollar-dark text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
-                        >
-                            My Matches
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Match Statistics */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h2 className="text-xl font-semibold text-instollar-dark mb-4">
-                        Your Matches
-                    </h2>
-                    <div className="space-y-3">
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Total Matches:</span>
-                            <span className="font-semibold">
-                                {isLoadingMatches ? '...' : matches.length}
-                            </span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Active Matches:</span>
-                            <span className="font-semibold text-green-600">
-                                {isLoadingMatches ? '...' : activeMatches.length}
-                            </span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Completed:</span>
-                            <span className="font-semibold text-blue-600">
-                                {isLoadingMatches ? '...' : completedMatches.length}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Recent Matches */}
-                <div className="bg-white rounded-lg shadow-sm p-6 md:col-span-2 lg:col-span-3">
-                    <h2 className="text-xl font-semibold text-instollar-dark mb-4">
-                        Recent Matches
-                    </h2>
-                    {isLoadingMatches ? (
-                        <div className="text-center py-4">
-                            <div className="text-gray-500">Loading matches...</div>
-                        </div>
-                    ) : matches.length === 0 ? (
-                        <div className="text-center py-8">
-                            <div className="text-gray-500 text-lg mb-4">
-                                No matches yet
-                            </div>
-                            <Link
-                                href="/talent/jobs"
-                                className="bg-instollar-dark text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
-                            >
-                                Browse Available Jobs
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {matches.slice(0, 3).map((match) => (
-                                <div key={match._id} className="border border-gray-200 rounded-lg p-4">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-semibold text-instollar-dark mb-1">
-                                                {match.jobId.title}
-                                            </h3>
-                                            <p className="text-gray-600 text-sm mb-2">
-                                                {match.jobId.description.substring(0, 100)}...
-                                            </p>
-                                            <div className="flex items-center text-sm text-gray-500 mb-2">
-                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
-                                                {match.jobId.location}
-                                            </div>
-                                            <div className="flex items-center">
-                                                <span className={`px-2 py-1 rounded text-xs font-medium ${match.status === 'Active'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-blue-100 text-blue-800'
-                                                    }`}>
-                                                    {match.status}
-                                                </span>
-                                                <span className="text-xs text-gray-500 ml-2">
-                                                    Matched {new Date(match.createdAt).toLocaleDateString()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {matches.length > 3 && (
-                                <div className="text-center pt-4">
-                                    <Link
-                                        href="/talent/matches"
-                                        className="text-instollar-dark hover:underline"
-                                    >
-                                        View All Matches ({matches.length})
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+        </PageLayout>
     );
 }

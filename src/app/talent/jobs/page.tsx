@@ -42,7 +42,7 @@ export default function TalentJobsPage() {
         try {
             const response = await fetch('http://localhost:3001/api/jobs');
             const data = await response.json();
-            
+
             if (response.ok) {
                 setJobs(data);
             } else {
