@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 interface AuthLayoutProps {
     children: React.ReactNode;
     title: string;
@@ -13,12 +15,12 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
             <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24">
                 <div className="mx-auto w-full max-w-sm lg:w-96">
                     <div>
-                        <div className="flex items-center">
+                        <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
                             <div className="w-8 h-8 bg-instollar-dark rounded-lg flex items-center justify-center mr-3">
                                 <span className="text-instollar-yellow font-bold text-lg">I</span>
                             </div>
                             <h1 className="text-2xl font-bold text-instollar-dark">Instollar Jobs</h1>
-                        </div>
+                        </Link>
                         <h2 className="mt-8 text-3xl font-bold text-instollar-dark">
                             {title}
                         </h2>
