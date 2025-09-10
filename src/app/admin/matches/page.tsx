@@ -22,7 +22,7 @@ export default function AdminMatchesPage() {
     const [selectedJob, setSelectedJob] = useState('');
     const [selectedTalent, setSelectedTalent] = useState('');
     const [filteredTalents, setFilteredTalents] = useState<User[]>([]);
-    
+
     const { execute: fetchMatchings, isLoading: matchingsLoading } = useApi<Matching[]>({
         showErrorToast: false,
         showSuccessToast: false,
