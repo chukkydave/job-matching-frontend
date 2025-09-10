@@ -2,15 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    skills: string[];
-    location: string;
-}
+import Link from 'next/link';
+import { User } from '@/lib/types';
 
 export default function DashboardPage() {
     const [user, setUser] = useState<User | null>(null);
@@ -116,27 +109,27 @@ export default function DashboardPage() {
                             Quick Actions
                         </h2>
                         <div className="space-y-3">
-                            <a
+                            <Link
                                 href="/jobs"
                                 className="block w-full bg-instollar-dark text-white text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
                             >
                                 Browse Jobs
-                            </a>
+                            </Link>
                             {user.role === 'Admin' && (
-                                <a
+                                <Link
                                     href="/admin"
                                     className="block w-full bg-instollar-yellow text-instollar-dark text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
                                 >
                                     Admin Panel
-                                </a>
+                                </Link>
                             )}
                             {user.role === 'Talent' && (
-                                <a
-                                    href="/my-matches"
+                                <Link
+                                    href="/talent"
                                     className="block w-full bg-instollar-yellow text-instollar-dark text-center py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
                                 >
                                     My Matches
-                                </a>
+                                </Link>
                             )}
                         </div>
                     </div>

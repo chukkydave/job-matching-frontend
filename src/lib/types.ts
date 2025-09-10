@@ -20,4 +20,24 @@ export interface Job {
         email: string;
     };
     createdAt: string;
-};
+}
+
+export interface Matching {
+    _id: string;
+    jobId: Job;
+    userId: {
+        _id: string;
+        name: string;
+        email: string;
+        skills: string[];
+        location: string;
+    };
+    matchedBy: {
+        _id: string;
+        name: string;
+        email: string;
+    };
+    status: 'Active' | 'Inactive';
+    createdAt: string;
+    updatedAt: string;
+}
