@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
+import Header from './Header';
 import { User } from '@/lib/types';
 
 interface AuthenticatedLayoutProps {
@@ -59,7 +60,14 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
     // Show public layout for public routes
     if (publicRoutes.includes(pathname) || pathname.startsWith('/jobs/')) {
-        return <>{children}</>;
+        return (
+            <>
+                <Header />
+                <main className="min-h-screen">
+                    {children}
+                </main>
+            </>
+        );
     }
 
     // Show authenticated layout with sidebar

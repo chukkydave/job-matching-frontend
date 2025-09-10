@@ -97,16 +97,6 @@ export default function PublicJobsPage() {
         <PageLayout
             title="Browse Available Jobs"
             subtitle="Discover exciting opportunities that match your skills and interests"
-            actions={
-                <div className="flex gap-3">
-                    <Link href="/login">
-                        <Button variant="secondary">Sign In</Button>
-                    </Link>
-                    <Link href="/register">
-                        <Button>Get Started</Button>
-                    </Link>
-                </div>
-            }
         >
             {/* Search and Filters */}
             <Card className="mb-8">
