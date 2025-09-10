@@ -16,7 +16,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     const pathname = usePathname();
 
     // Routes that don't need authentication
-    const publicRoutes = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/'];
+    const publicRoutes = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/', '/jobs'];
 
     useEffect(() => {
         checkAuth();
@@ -24,7 +24,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
     const checkAuth = () => {
         // Skip auth check for public routes
-        if (publicRoutes.includes(pathname)) {
+        if (publicRoutes.includes(pathname) || pathname.startsWith('/jobs/')) {
             setIsLoading(false);
             return;
         }
@@ -49,7 +49,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     };
 
     // Show loading for auth routes
-    if (isLoading && !publicRoutes.includes(pathname)) {
+    if (isLoading && !publicRoutes.includes(pathname) && !pathname.startsWith('/jobs/')) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-lg text-gray-600">Loading...</div>
@@ -58,7 +58,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     }
 
     // Show public layout for public routes
-    if (publicRoutes.includes(pathname)) {
+    if (publicRoutes.includes(pathname) || pathname.startsWith('/jobs/')) {
         return <>{children}</>;
     }
 
